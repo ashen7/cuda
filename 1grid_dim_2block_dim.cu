@@ -2,16 +2,13 @@
 #include <stdio.h>
 #include <time.h>
 
-const int M = 32 * 32;
-const int N = 32 * 16;
+const int M = 1024;
+const int N = 512;
 
-//2维网格2维线程块
+//1维网格2维线程块
 __global__ void VectorAdd(float* a, float* b, float* c) {
-    //int thread_id = (blockIdx.x * gridDim.x + blockIdx.y) * blockDim.x * blockDim.y + (threadIdx.x * blockDim.x + threadIdx.y);
-    //int thread_id = blockIdx.y * gridDim.x * blockDim.y * blockDim.x + blockIdx.x * blockDim.y * blockDim.x + threadIdx.y * blockDim.x + threadIdx.x; 
-    //int thread_id = (blockIdx.x * gridDim.x + blockIdx.y) * blockDim.x * blockDim.y + threadIdx.x * blockDim.x + threadIdx.y;
-    int thread_id = (blockIdx.y * blockDim.y + threadIdx.y) * gridDim.x * blockDim.x 
-                    + blockIdx.x * blockDim.x + threadIdx.x;
+    //int thread_id = blockIdx.x * blockDim.x * blockDim.y + threadIdx.x * blockDim.y + threadIdx.y;
+    int thread_id = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
     c[thread_id] = a[thread_id] + b[thread_id];
 }
 
@@ -40,7 +37,7 @@ int main() {
 
     //一个kernel函数由一个gpu的一个grid执行  
     //调用核函数 cpu调用 gpu运行 
-    dim3 dim_grid(32, 32);       //一个grid网格包含n / 512个线程块blocks(为了充分利用sm blocks尽可能多)
+    dim3 dim_grid(M);       //一个grid网格包含n / 512个线程块blocks(为了充分利用sm blocks尽可能多)
     dim3 dim_block(32, 16);  //一个线程块block包含 512个线程threads(最多不超过512个)
     VectorAdd<<<dim_grid, dim_block>>>(device_a, device_b, device_c);
 
@@ -50,7 +47,7 @@ int main() {
     for (int i = 0; i < M * N; i++) 
         printf("%.0f + %.0f = %.0f\t", a[i], b[i], c[i]);
     int end = clock();
-    printf("\n程序耗时：%ds\n", (end - start) / 1000);
+    printf("\n程序耗时：%dms\n", (end - start) / 1000);
 
     //释放gpu显存
     cudaFree(device_a);

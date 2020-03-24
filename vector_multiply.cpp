@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <time.h>
 
-const int a_row = 320;
-const int a_col = 160;
-const int b_row = 160;
-const int b_col = 640;
+const int a_row = 2;
+const int a_col = 3;
+const int b_row = 3;
+const int b_col = 4;
 
 int main() {
     int start = clock();
